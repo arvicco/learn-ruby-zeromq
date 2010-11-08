@@ -2,8 +2,7 @@ require 'rubygems'
 require 'ffi-rzmq'
 Thread.abort_on_exception = true
 
-
-# PUB and SUB sockts work together to broadcast messages out to many clients
+# PUB and SUB sockets work together to broadcast messages out to many clients
 # A single PUB socket can talk to multiple SUB sockets at the same time.
 # Messages only go one way, from the PUB to the SUB.
 # 
@@ -16,7 +15,7 @@ Thread.abort_on_exception = true
 #
 # So, don't plan on all PUB messages making their way anywhere unless there's a connected
 # SUB socket. When created with 'connect' (which is perhaps atypical for a pub/sub topology),
-# queing of messages does takes place.
+# queueing of messages does takes place.
 #
 # We're also going to learn about multipart messages in this example
 #
@@ -26,7 +25,7 @@ Thread.abort_on_exception = true
 #                         /       \
 #                  sub_sock1     sub_sock2
 #
-# Each socket will get its own thread, so you'll see them run simultanously
+# Each socket will get its own thread, so you'll see them run simultaneously
 
 ctx = ZMQ::Context.new(1)
 
@@ -35,9 +34,9 @@ Thread.new do
   pub_sock = ctx.socket(ZMQ::PUB)
   pub_sock.bind('tcp://127.0.0.1:2200')
   
-  # This time, our publisher will send out messages indefinitel
+  # This time, our publisher will send out messages indefinitely
   loop do
-    puts "P: Sending our first message, about the Time Machine"
+    puts "P: Sending our first message, about the Time Machine\n"
     
     # ZeroMQ messages can be broken up into multiple parts.
     # Messages are guaranteed to either come with all parts or not at all,
@@ -50,7 +49,7 @@ Thread.new do
     pub_sock.send_string('Important', ZMQ::SNDMORE)     #Topic
     pub_sock.send_string('Find Time Machine')           #Body
 
-    puts "P: Sending our second message, about Brawndo"
+    puts "P: Sending our second message, about Brawndo\n"
     pub_sock.send_string('Unimportant', ZMQ::SNDMORE)   #Topic
     pub_sock.send_string('Drink Brawndo')               #Body
 
@@ -76,8 +75,8 @@ sub_threads = []
       topic    = sub_sock.recv_string
       body     = sub_sock.recv_string if sub_sock.more_parts?
       
-      puts "S#{i}: I received a message! The topic was '#{topic}'"
-      puts "S#{i}: The body of the message was '#{body}'"
+      puts "S#{i}: I received a message! The topic was '#{topic}'\n"
+      puts "S#{i}: The body of the message was '#{body}'\n"
     end
   end
 end
