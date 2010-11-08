@@ -22,25 +22,34 @@ ctx = ZMQ::Context.new(1)
 Thread.new do
   rep_sock = ctx.socket(ZMQ::REP)
   rep_sock.bind('tcp://127.0.0.1:2200')
-  
+
   begin
     while message = rep_sock.recv_string
-      puts "Received request '#{message}'"
+      puts "Know-it-all: Received request '#{message}'\n"
       # You must send a reply back to the REQ socket.
       # Otherwise the REQ socket will be unable to send any more requests
-      rep_sock.send_string('Polo!')
+      rep_sock.send_string("#{message} Polo!")
     end
   rescue ZMQ::SocketError
   end
 end
 
-req_sock = ctx.socket(ZMQ::REQ)
-req_sock.connect('tcp://127.0.0.1:2200')
+# Our Requesters...
+# Let's check that replies are routed to the correct Requester'
+req_threads = []
+%w[Marco Water Golf].each do |name|
+  req_threads << Thread.new do
+    req_sock = ctx.socket(ZMQ::REQ)
+    req_sock.connect('tcp://127.0.0.1:2200')
 
-2.times do
-  req_sock.send_string('Marco...')
-  rep = req_sock.recv_string
-  puts "Received reply '#{rep}'"
+    3.times do
+      req_sock.send_string("#{name}...")
+      rep = req_sock.recv_string
+      puts "Requester #{name}: Received reply '#{rep}'\n"
+    end
+  end
 end
+
+req_threads.each { |t| t.join }
 
 ctx.terminate
